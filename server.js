@@ -14,7 +14,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: '*', // replace with your frontend URL for production
+    origin: '*', 
   },
 });
 
@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', async (msg) => {
     const { from, to, text, timestamp } = msg;
     try {
-      // Save message to DB
+      
       await pool.query(
         `INSERT INTO messages (sender_id, receiver_id, text, timestamp) VALUES (?, ?, ?, ?)`,
         [from, to, text, new Date(timestamp)]
@@ -121,7 +121,7 @@ app.use('/api/dashboard', dashboardRoutes);
 // Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });
 
 const userRoutes = require('./routes/user');

@@ -5,7 +5,7 @@ let io;
 const initSocket = (server) => {
   io = socketIO(server, {
     cors: {
-      origin: 'http://localhost:3000', // React frontend
+      origin: 'http://localhost:3000', 
       methods: ['GET', 'POST'],
     },
   });

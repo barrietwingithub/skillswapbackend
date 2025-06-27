@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// ✅ NO "authenticate" here
+//  NO "authenticate" here
 router.get('/', async (req, res) => {
   try {
     const [students] = await db.promise().query('SELECT * FROM students');
