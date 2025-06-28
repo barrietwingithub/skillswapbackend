@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -7,46 +6,46 @@ const { Server } = require('socket.io');
 const mysql = require('mysql2/promise');
 const path = require('path');
 
-const cors = require('cors');
-
-app.use(cors({
-    origin: 'https://your-netlify-site.netlify.app',  // ✅ Replace with your real Netlify URL
-    credentials: true
-}));
-
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: '*', 
-  },
-});
+// --- CORS setup ---
+app.use(cors({
+  origin: 'https://skswap.netlify.app', // ✅ Your actual Netlify frontend URL
+  credentials: true
+}));
 
-app.use(cors());
+// --- Middleware ---
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// MySQL pool config
+// --- MySQL pool config ---
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'barrie74217921',
+  password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'skillswap',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
+  queueLimit: 0
 });
 
-// Make pool accessible in req for routes
+// Make pool accessible in routes via req.pool
 app.use((req, res, next) => {
   req.pool = pool;
   next();
 });
 
-// --- Socket.IO realtime chat setup ---
+// --- Socket.IO chat setup ---
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+  },
+});
+
 const onlineUsers = new Map();
 
 io.on('connection', (socket) => {
@@ -61,12 +60,10 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', async (msg) => {
     const { from, to, text, timestamp } = msg;
     try {
-      
       await pool.query(
         `INSERT INTO messages (sender_id, receiver_id, text, timestamp) VALUES (?, ?, ?, ?)`,
         [from, to, text, new Date(timestamp)]
       );
-
       io.to(to).emit('receiveMessage', msg);
       io.to(from).emit('receiveMessage', msg);
     } catch (err) {
@@ -85,7 +82,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// --- API Chat routes ---
+// --- Chat Routes ---
 app.post('/api/chat/save', async (req, res) => {
   try {
     const { from, to, text, timestamp } = req.body;
@@ -118,18 +115,17 @@ app.get('/api/chat/history/:user1/:user2', async (req, res) => {
   }
 });
 
-// --- Import and use auth and dashboard routes ---
+// --- Auth and Dashboard Routes ---
 const authRoutes = require(path.join(__dirname, 'routes', 'auth'));
 const dashboardRoutes = require(path.join(__dirname, 'routes', 'dashboard'));
+const userRoutes = require('./routes/user');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/user', userRoutes);
 
-// Start server
+// --- Start the server ---
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(` Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
-
-const userRoutes = require('./routes/user');
-app.use('/api/user', userRoutes);
