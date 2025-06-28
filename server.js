@@ -7,6 +7,13 @@ const { Server } = require('socket.io');
 const mysql = require('mysql2/promise');
 const path = require('path');
 
+const cors = require('cors');
+
+app.use(cors({
+    origin: 'https://your-netlify-site.netlify.app',  // ✅ Replace with your real Netlify URL
+    credentials: true
+}));
+
 dotenv.config();
 
 const app = express();
