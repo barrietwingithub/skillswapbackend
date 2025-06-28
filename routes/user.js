@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../db');
 const authenticate = require('../middleware/auth');
 
+
 // ✅ Update student name only
 router.put('/:id', authenticate, async (req, res) => {
     const { name } = req.body;
